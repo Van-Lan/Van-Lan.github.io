@@ -1,0 +1,33 @@
+#titre 
+{ 
+text-align: center; 
+background-color: pink; 
+} 
+#sous-titre 
+{ 
+font-family: Verdana; 
+text-decoration: underline; 
+color: green; 
+} 
+#étape3
+{ 
+text-align: center; 
+background-color: red; 
+} 
+#étape3
+{ 
+font-family: Verdana; 
+font-style: italic; 
+color: green; 
+} 
+#para_1 
+{ 
+font-style: italic; 
+color: green; 
+} 
+#étape6
+{ 
+font-family: Verdana;
+text-align: center; 
+background-color: red; 
+} 
