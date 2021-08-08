@@ -1,0 +1,15 @@
+#titre 
+{ 
+text-align: center; 
+background-color: #ffd700; 
+} 
+#sous-titre 
+{ 
+font-family: Verdana;  
+color: #0c4e22; 
+} 
+
+.button-color
+{
+    background-color: #db2222
+}
