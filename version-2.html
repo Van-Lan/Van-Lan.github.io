@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <title>Gamedev Canvas Workshop</title>
+    <title>The Zone</title>
     <style>
         * {
             padding: 0;
@@ -52,6 +52,11 @@
                 this.color = player.color;
             }
 
+            move() {
+                this.x += this.dx;
+                this.y += this.dy;
+            }
+
             bounceX() {
                 this.dx = -this.dx;
             }
@@ -72,6 +77,11 @@
                 this.y = canvas.height - 30;
                 this.dx = 2;
                 this.dy = -2;
+            }
+
+            accelerate() {
+                this.dx = this.dx * 1.05;
+                this.dy = this.dy * 1.05;
             }
         }
 
@@ -212,6 +222,7 @@
                     if (b.status == 1) {
                         if (ball1.x > b.x && ball1.x < b.x + brickWidth && ball1.y > b.y && ball1.y < b.y + brickHeight) {
                             ball1.bounceY();
+                            ball1.accelerate();
                             b.status = 0;
                             if (ball1.player === 1) {
                                 player1.score++;
@@ -226,6 +237,7 @@
                         }
                         if (ball2.x > b.x && ball2.x < b.x + brickWidth && ball2.y > b.y && ball2.y < b.y + brickHeight) {
                             ball2.bounceY();
+                            ball2.accelerate();
                             b.status = 0;
                             if (ball2.player === 1) {
                                 player1.score++;
@@ -263,7 +275,6 @@
                             clearInterval(interval); // Needed for Chrome to end game
                         } else {
                             ball.resetPositionUp();
-                            paddle2.resetPosition();
                         }
                     }
                 }
@@ -284,14 +295,12 @@
                             clearInterval(interval); // Needed for Chrome to end game
                         } else {
                             ball.resetPositionDown();
-                            paddle1.resetPosition();
                         }
                     }
                 }
             }
 
-            ball.x += ball.dx;
-            ball.y += ball.dy;
+            ball.move();
         }
 
         function draw() {
