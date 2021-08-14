@@ -47,6 +47,8 @@
         var brickPadding = 10;
         var brickOffsetTop = 175;
         var brickOffsetLeft = 20;
+        var ball1Player = 1;
+        var ball2Player = 2;
 
         var bricks = [];
         for (var c = 0; c < brickColumnCount; c++) {
@@ -101,6 +103,69 @@
             }
         }
 
+        function drawScore() {
+            ctx.font = "16px Arial";
+            ctx.fillStyle = "#0c4e22";
+            ctx.fillText("Score 1: " + score1, 8, canvas.height - 20);
+            ctx.fillText("Score 2: " + score2, 8, 20);
+        }
+
+        function drawLives() {
+            ctx.font = "16px Arial";
+            ctx.fillStyle = "#0c4e22";
+            ctx.fillText("Lives 1: " + lives1, canvas.width - 72, canvas.height - 20);
+            ctx.fillText("Lives 2: " + lives2, canvas.width - 72, 20);
+        }
+
+        function drawBall1() {
+            ctx.beginPath();
+            ctx.arc(x1, y1, ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = "#FF0000";
+            ctx.fill();
+            ctx.closePath();
+        }
+        function drawBall2() {
+            ctx.beginPath();
+            ctx.arc(x2, y2, ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = "#0c4e22";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawPaddle1() {
+            ctx.beginPath();
+            ctx.rect(paddleX1, canvas.height - paddleHeight, paddleWidth, paddleHeight);
+            ctx.fillStyle = "#FF0000";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawPaddle2() {
+            ctx.beginPath();
+            ctx.rect(paddleX2, 0, paddleWidth, paddleHeight);
+            ctx.fillStyle = "#0c4e22";
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        function drawBricks() {
+            for (var c = 0; c < brickColumnCount; c++) {
+                for (var r = 0; r < brickRowCount; r++) {
+                    if (bricks[c][r].status == 1) {
+                        var brickX = (c * (brickWidth + brickPadding)) + brickOffsetLeft;
+                        var brickY = (r * (brickHeight + brickPadding)) + brickOffsetTop;
+                        bricks[c][r].x = brickX;
+                        bricks[c][r].y = brickY;
+                        ctx.beginPath();
+                        ctx.rect(brickX, brickY, brickWidth, brickHeight);
+                        ctx.fillStyle = "#ffd700";
+                        ctx.fill();
+                        ctx.closePath();
+                    }
+                }
+            }
+        }
+
         function collisionDetection() {
             for (var c = 0; c < brickColumnCount; c++) {
                 for (var r = 0; r < brickRowCount; r++) {
@@ -129,75 +194,29 @@
             }
         }
 
-        function drawScore() {
-            ctx.font = "16px Arial";
-            ctx.fillStyle = "#0c4e22";
-            ctx.fillText("Score 1: " + score1, 8, canvas.height - 20);
-            ctx.fillText("Score 2: " + score2, 8, 20);
-        }
-
-        function drawLives() {
-            ctx.font = "16px Arial";
-            ctx.fillStyle = "#0c4e22";
-            ctx.fillText("Lives 1: " + lives1, canvas.width - 72, canvas.height - 20);
-            ctx.fillText("Lives 2: " + lives2, canvas.width - 72, 20);
-        }
-
-        function drawBall1() {
-            ctx.beginPath();
-            ctx.arc(x1, y1, ballRadius, 0, Math.PI * 2);
-            ctx.fillStyle = "#0c4e22";
-            ctx.fill();
-            ctx.closePath();
-        }
-        function drawBall2() {
-            ctx.beginPath();
-            ctx.arc(x2, y2, ballRadius, 0, Math.PI * 2);
-            ctx.fillStyle = "#0c4e22";
-            ctx.fill();
-            ctx.closePath();
-        }
-
-        function drawPaddle1() {
-            ctx.beginPath();
-            ctx.rect(paddleX1, canvas.height - paddleHeight, paddleWidth, paddleHeight);
-            ctx.fillStyle = "#FF0000";
-            ctx.fill();
-            ctx.closePath();
-        }
-
-        function drawPaddle2() {
-            ctx.beginPath();
-            ctx.rect(paddleX2, 0, paddleWidth, paddleHeight);
-            ctx.fillStyle = "#FF0000";
-            ctx.fill();
-            ctx.closePath();
-        }
-
-        function drawBricks() {
-            for (var c = 0; c < brickColumnCount; c++) {
-                for (var r = 0; r < brickRowCount; r++) {
-                    if (bricks[c][r].status == 1) {
-                        var brickX = (c * (brickWidth + brickPadding)) + brickOffsetLeft;
-                        var brickY = (r * (brickHeight + brickPadding)) + brickOffsetTop;
-                        bricks[c][r].x = brickX;
-                        bricks[c][r].y = brickY;
-                        ctx.beginPath();
-                        ctx.rect(brickX, brickY, brickWidth, brickHeight);
-                        ctx.fillStyle = "#ffd700";
-                        ctx.fill();
-                        ctx.closePath();
-                    }
-                }
-            }
-        }
-
+        
         function moveBall1() {
             if (x1 + dx1 > canvas.width - ballRadius || x1 + dx1 < ballRadius) {
                 dx1 = -dx1;
             }
             if (y1 + dy1 < ballRadius) {
                 dy1 = -dy1;
+                // if (x1 > paddleX2 && x1 < paddleX2 + paddleWidth) {
+                //     dy1 = -dy1;
+                // } else {
+                //     lives1--;
+                //     if (!lives1) {
+                //         alert("PLAYER 2, YOU WIN, CONGRATULATIONS!");
+                //         document.location.reload();
+                //         clearInterval(interval); // Needed for Chrome to end game
+                //     } else {
+                //         x1 = canvas.width / 2;
+                //         y1 = canvas.height - 30;
+                //         dx1 = 2;
+                //         dy1 = -2;
+                //         paddleX1 = (canvas.width - paddleWidth) / 2;
+                //     }
+                // }
             } else if (y1 + dy1 > canvas.height - ballRadius) {
                 if (x1 > paddleX1 && x1 < paddleX1 + paddleWidth) {
                     dy1 = -dy1;
@@ -226,8 +245,6 @@
                 dx2 = -dx2;
             }
             if (y2 + dy2 < ballRadius) {
-                dy2 = -dy2;
-            } else if (y2 + dy2 < ballRadius) {
                 if (x2 > paddleX2 && x2 < paddleX2 + paddleWidth) {
                     dy2 = -dy2;
                 } else {
@@ -238,12 +255,31 @@
                         clearInterval(interval); // Needed for Chrome to end game
                     } else {
                         x2 = canvas.width / 2;
-                        y2 = canvas.height - 30;
+                        y2 = 30;
                         dx2 = 2;
                         dy2 = -2;
                         paddleX2 = (canvas.width - paddleWidth) / 2;
                     }
                 }
+            } 
+            else if (y2 + dy2 > canvas.height - ballRadius) {
+                dy2 = -dy2;
+                // if (x2 > paddleX1 && x2 < paddleX1 + paddleWidth) {
+                //     dy2 = -dy2;
+                // } else {
+                //     lives2--;
+                //     if (!lives2) {
+                //         alert("PLAYER 1, YOU WIN, CONGRATULATIONS!");
+                //         document.location.reload();
+                //         clearInterval(interval); // Needed for Chrome to end game
+                //     } else {
+                //         x2 = canvas.width / 2;
+                //         y2 = 30;
+                //         dx2 = 2;
+                //         dy2 = -2;
+                //         paddleX2 = (canvas.width - paddleWidth) / 2;
+                //     }
+                // }
             }
 
             x2 += dx2;
