@@ -25,19 +25,53 @@
     <script>
         var canvas = document.getElementById("myCanvas");
         var ctx = canvas.getContext("2d");
-        var x1 = canvas.width / 2;
-        var y1 = canvas.height - 30;
-        var dx1 = 2;
-        var dy1 = -2;
-        var x2 = canvas.width / 2;
-        var y2 = 30;
-        var dx2 = 2;
-        var dy2 = -2;
-        var ballRadius = 5;
         var paddleHeight = 10;
         var paddleWidth = 60;
-        var paddleX1 = (canvas.width - paddleWidth) / 2;
-        var paddleX2 = (canvas.width - paddleWidth) / 2;
+        class Player {
+            constructor(id, color) {
+                this.id = id;
+                this.color = color;
+                this.lives = 3;
+                this.score = 0;
+            }
+        }
+        class Ball {
+            constructor(id, x, y, dx, dy, player) {
+                this.id = id;
+                this.x = x;
+                this.y = y;
+                this.dx = dx;
+                this.dy = dy;
+                this.radius = 5;
+                this.player = player.id;
+                this.color = player.color;
+            }
+
+            changePlayer(player){
+                this.player = player.id;
+                this.color = player.color;
+            }
+        }
+
+        class Paddle {
+            constructor(id, x, y, player) {
+                this.id = id;
+                this.x = x;
+                this.y = y;
+                this.height = paddleHeight;
+                this.width = paddleWidth;
+                this.player = player.id;
+                this.color = player.color;
+            }
+        }
+
+        var player1 = new Player(1, "#FF0000");
+        var player2 = new Player(2, "#0c4e22");
+        var ball1 = new Ball(1, canvas.width / 2, canvas.height - 30, 2, -2, player1);
+        var ball2 = new Ball(2, canvas.width / 2, 30, 2, -2, player2);
+        var paddle1 = new Paddle(1, (canvas.width - paddleWidth) / 2, canvas.height - paddleHeight, player1);
+        var paddle2 = new Paddle(2, (canvas.width - paddleWidth) / 2, 0, player2);
+
         var rightPressed = false;
         var leftPressed = false;
         var brickRowCount = 5;
@@ -47,8 +81,6 @@
         var brickPadding = 10;
         var brickOffsetTop = 175;
         var brickOffsetLeft = 20;
-        var ball1Player = 1;
-        var ball2Player = 2;
 
         var bricks = [];
         for (var c = 0; c < brickColumnCount; c++) {
@@ -83,7 +115,7 @@
         function mouseMoveHandler(e) {
             var relativeX = e.clientX - canvas.offsetLeft;
             if (relativeX > 0 && relativeX < canvas.width) {
-                paddleX1 = relativeX - paddleWidth / 2;
+                paddle1.x = relativeX - paddle1.width / 2;
             }
         }
 
@@ -117,33 +149,18 @@
             ctx.fillText("Lives 2: " + lives2, canvas.width - 72, 20);
         }
 
-        function drawBall1() {
+        function drawBall(ball) {
             ctx.beginPath();
-            ctx.arc(x1, y1, ballRadius, 0, Math.PI * 2);
-            ctx.fillStyle = "#FF0000";
-            ctx.fill();
-            ctx.closePath();
-        }
-        function drawBall2() {
-            ctx.beginPath();
-            ctx.arc(x2, y2, ballRadius, 0, Math.PI * 2);
-            ctx.fillStyle = "#0c4e22";
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fillStyle = ball.color;
             ctx.fill();
             ctx.closePath();
         }
 
-        function drawPaddle1() {
+        function drawPaddle(paddle) {
             ctx.beginPath();
-            ctx.rect(paddleX1, canvas.height - paddleHeight, paddleWidth, paddleHeight);
-            ctx.fillStyle = "#FF0000";
-            ctx.fill();
-            ctx.closePath();
-        }
-
-        function drawPaddle2() {
-            ctx.beginPath();
-            ctx.rect(paddleX2, 0, paddleWidth, paddleHeight);
-            ctx.fillStyle = "#0c4e22";
+            ctx.rect(paddle.x, paddle.y, paddle.width, paddle.height);
+            ctx.fillStyle = paddle.color;
             ctx.fill();
             ctx.closePath();
         }
@@ -171,8 +188,8 @@
                 for (var r = 0; r < brickRowCount; r++) {
                     var b = bricks[c][r];
                     if (b.status == 1) {
-                        if (x1 > b.x && x1 < b.x + brickWidth && y1 > b.y && y1 < b.y + brickHeight) {
-                            dy1 = -dy1;
+                        if (ball1.x > b.x && ball1.x < b.x + brickWidth && ball1.y > b.y && ball1.y < b.y + brickHeight) {
+                            ball1.dy = -ball1.dy;
                             b.status = 0;
                             score1++;
                             if (score1 + score2 == brickRowCount * brickColumnCount) {
@@ -180,12 +197,12 @@
                                 document.location.reload();
                             }
                         }
-                        if (x2 > b.x && x2 < b.x + brickWidth && y2 > b.y && y2 < b.y + brickHeight) {
-                            dy2 = -dy2;
+                        if (ball2.x > b.x && ball2.x < b.x + brickWidth && ball2.y > b.y && ball2.y < b.y + brickHeight) {
+                            ball2.dy = -ball2.dy;
                             b.status = 0;
                             score2++;
                             if (score1 + score2 == brickRowCount * brickColumnCount) {
-                                alert("PLAYRER 2, YOU WIN, CONGRATULATIONS!");
+                                alert("PLAYER 2, YOU WIN, CONGRATULATIONS!");
                                 document.location.reload();
                             }
                         }
@@ -194,15 +211,71 @@
             }
         }
 
-        
-        function moveBall1() {
-            if (x1 + dx1 > canvas.width - ballRadius || x1 + dx1 < ballRadius) {
-                dx1 = -dx1;
+        function moveBall(ball) {
+            if (ball.x + ball.dx > canvas.width - ball.radius || ball.x + ball.dx < ball.radius) {
+                ball.dx = -ball.dx;
             }
-            if (y1 + dy1 < ballRadius) {
-                dy1 = -dy1;
-                // if (x1 > paddleX2 && x1 < paddleX2 + paddleWidth) {
-                //     dy1 = -dy1;
+            if (ball.y + ball.dy < ball.radius) {
+                if (ball.x > paddle2.x && ball.x < paddle2.x + paddle2.width) {
+                    ball.dy = -ball.dy;
+                    ball.changePlayer(player2);
+                } else {
+                    if (ball.player === 1) {
+                        ball.dy = -ball.dy;
+                    }
+                    else if (ball.player === 2) {
+                        lives2--;
+                        if (!lives2) {
+                            alert("PLAYER 1, YOU WIN, CONGRATULATIONS!");
+                            document.location.reload();
+                            clearInterval(interval); // Needed for Chrome to end game
+                        } else {
+                            ball.x = canvas.width / 2;
+                            ball.y = 30;
+                            ball.dx = 2;
+                            ball.dy = -2;
+                            paddle2.x = (canvas.width - paddle2.width) / 2;
+                        }
+                    }
+                }
+            }
+            else if (ball.y + ball.dy > canvas.height - ball.radius) {
+                if (ball.x > paddle1.x && ball.x < paddle1.x + paddle1.width) {
+                    ball.dy = -ball1.dy;
+                    ball.changePlayer(player1);
+                } else {
+                    if (ball.player === 2) {
+                        ball.dy = -ball.dy;
+                    }
+                    else {
+                        lives1--;
+                        if (!lives1) {
+                            alert("PLAYER 2, YOU WIN, CONGRATULATIONS!");
+                            document.location.reload();
+                            clearInterval(interval); // Needed for Chrome to end game
+                        } else {
+                            ball.x = canvas.width / 2;
+                            ball.y = canvas.height - 30;
+                            ball.dx = 2;
+                            ball.dy = -2;
+                            paddle1.x = (canvas.width - paddle1.width) / 2;
+                        }
+                    }
+                }
+            }
+
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+        }
+
+        function moveBall1() {
+            if (ball1.x + ball1.dx > canvas.width - ball1.radius || ball1.x + ball1.dx < ball1.radius) {
+                ball1.dx = -ball1.dx;
+            }
+            if (ball1.y + ball1.dy < ball1.radius) {
+                ball1.dy = -ball1.dy;
+                // if (ball1.x > paddle2.x && ball1.x < paddle2.x + paddle2.width) {
+                //     ball1.dy = -ball1.dy;
                 // } else {
                 //     lives1--;
                 //     if (!lives1) {
@@ -210,16 +283,16 @@
                 //         document.location.reload();
                 //         clearInterval(interval); // Needed for Chrome to end game
                 //     } else {
-                //         x1 = canvas.width / 2;
-                //         y1 = canvas.height - 30;
-                //         dx1 = 2;
-                //         dy1 = -2;
-                //         paddleX1 = (canvas.width - paddleWidth) / 2;
+                //         ball1.x = canvas.width / 2;
+                //         ball1.y = canvas.height - 30;
+                //         ball1.dx = 2;
+                //         ball1.dy = -2;
+                //         paddle1.x = (canvas.width - paddle1.width) / 2;
                 //     }
                 // }
-            } else if (y1 + dy1 > canvas.height - ballRadius) {
-                if (x1 > paddleX1 && x1 < paddleX1 + paddleWidth) {
-                    dy1 = -dy1;
+            } else if (ball1.y + ball1.dy > canvas.height - ball1.radius) {
+                if (ball1.x > paddle1.x && ball1.x < paddle1.x + paddle1.width) {
+                    ball1.dy = -ball1.dy;
                 } else {
                     lives1--;
                     if (!lives1) {
@@ -227,26 +300,26 @@
                         document.location.reload();
                         clearInterval(interval); // Needed for Chrome to end game
                     } else {
-                        x1 = canvas.width / 2;
-                        y1 = canvas.height - 30;
-                        dx1 = 2;
-                        dy1 = -2;
-                        paddleX1 = (canvas.width - paddleWidth) / 2;
+                        ball1.x = canvas.width / 2;
+                        ball1.y = canvas.height - 30;
+                        ball1.dx = 2;
+                        ball1.dy = -2;
+                        paddle1.x = (canvas.width - paddle1.width) / 2;
                     }
                 }
             }
 
-            x1 += dx1;
-            y1 += dy1;
+            ball1.x += ball1.dx;
+            ball1.y += ball1.dy;
         }
 
         function moveBall2() {
-            if (x2 + dx2 > canvas.width - ballRadius || x2 + dx2 < ballRadius) {
-                dx2 = -dx2;
+            if (ball2.x + ball2.dx > canvas.width - ball2.radius || ball2.x + ball2.dx < ball2.radius) {
+                ball2.dx = -ball2.dx;
             }
-            if (y2 + dy2 < ballRadius) {
-                if (x2 > paddleX2 && x2 < paddleX2 + paddleWidth) {
-                    dy2 = -dy2;
+            if (ball2.y + ball2.dy < ball2.radius) {
+                if (ball2.x > paddle2.x && ball2.x < paddle2.x + paddle2.width) {
+                    ball2.dy = -ball2.dy;
                 } else {
                     lives2--;
                     if (!lives2) {
@@ -254,18 +327,18 @@
                         document.location.reload();
                         clearInterval(interval); // Needed for Chrome to end game
                     } else {
-                        x2 = canvas.width / 2;
-                        y2 = 30;
-                        dx2 = 2;
-                        dy2 = -2;
-                        paddleX2 = (canvas.width - paddleWidth) / 2;
+                        ball2.x = canvas.width / 2;
+                        ball2.y = 30;
+                        ball2.dx = 2;
+                        ball2.dy = -2;
+                        paddle2.x = (canvas.width - paddle2.width) / 2;
                     }
                 }
-            } 
-            else if (y2 + dy2 > canvas.height - ballRadius) {
-                dy2 = -dy2;
-                // if (x2 > paddleX1 && x2 < paddleX1 + paddleWidth) {
-                //     dy2 = -dy2;
+            }
+            else if (ball2.y + ball2.dy > canvas.height - ball2.radius) {
+                ball2.dy = -ball2.dy;
+                // if (ball2.x > paddle1.x && ball2.x < paddle1.x + paddle1.width) {
+                //     ball2.dy = -ball2.dy;
                 // } else {
                 //     lives2--;
                 //     if (!lives2) {
@@ -273,42 +346,42 @@
                 //         document.location.reload();
                 //         clearInterval(interval); // Needed for Chrome to end game
                 //     } else {
-                //         x2 = canvas.width / 2;
-                //         y2 = 30;
-                //         dx2 = 2;
-                //         dy2 = -2;
-                //         paddleX2 = (canvas.width - paddleWidth) / 2;
+                //         ball2.x = canvas.width / 2;
+                //         ball2.y = 30;
+                //         ball2.dx = 2;
+                //         ball2.dy = -2;
+                //         paddle2.x = (canvas.width - paddle2.width) / 2;
                 //     }
                 // }
             }
 
-            x2 += dx2;
-            y2 += dy2;
+            ball2.x += ball2.dx;
+            ball2.y += ball2.dy;
         }
 
         function draw() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawBall1();
-            drawBall2();
-            drawPaddle1();
-            drawPaddle2();
+            drawBall(ball1);
+            drawBall(ball2);
+            drawPaddle(paddle1);
+            drawPaddle(paddle2);
             drawBricks();
             collisionDetection();
             drawScore();
             drawLives();
-            
-            moveBall1();
-            moveBall2();
-            
+
+            moveBall(ball1);
+            moveBall(ball2);
+
             if (rightPressed) {
-                paddleX2 += 7;
-                if (paddleX2 + paddleWidth > canvas.width) {
-                    paddleX2 = canvas.width - paddleWidth;
+                paddle2.x += 7;
+                if (paddle2.x + paddle2.width > canvas.width) {
+                    paddle2.x = canvas.width - paddle2.width;
                 }
             } else if (leftPressed) {
-                paddleX2 -= 7;
-                if (paddleX2 < 0) {
-                    paddleX2 = 0;
+                paddle2.x -= 7;
+                if (paddle2.x < 0) {
+                    paddle2.x = 0;
                 }
             }
             requestAnimationFrame(draw);
